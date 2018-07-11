@@ -101,6 +101,7 @@ UnicastServerMediaSubsession* UnicastServerMediaSubsession::createNew(UsageEnvir
 
 FramedSource* UnicastServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate)
 {
+    estBitrate = 5000; // kbps, estimate
     FramedSource* source = m_replicator->createStreamReplica();
     return createSource(envir(), source);
 }
