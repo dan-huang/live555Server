@@ -29,10 +29,10 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_addList
     //save listener_instance for use later
     
     //Remember to free it after you're done using it otherwise garbage collector won't collect it and you'll get memory leaks:
-//    if (saved_listener_instance != NULL) {
-//        LOGI("LiveStreamer_Native 2, DeleteGlobalRef listener_instance");
-//        env->DeleteGlobalRef(saved_listener_instance);
-//    }
+    if (saved_listener_instance != NULL) {
+        LOGI("LiveStreamer_Native 2, DeleteGlobalRef listener_instance");
+        env->DeleteGlobalRef(saved_listener_instance);
+    }
     
     
     saved_listener_instance = env->NewGlobalRef(listener_instance);

@@ -289,21 +289,21 @@ void RTPTransmissionStats
     unsigned rtd = roundTripDelay();
     fDelayInSeconds = rtd/65536.0;
     fPacketLossPercent = fPacketLossRatio / 256.0;
-#ifdef DEBUG_RR
-  fprintf(stderr, "RTCP RR data (received at %lu.%06ld): lossStats 0x%08x, lastPacketNumReceived 0x%08x, jitter 0x%08x, lastSRTime 0x%08x, diffSR_RRTime 0x%08x\n",
-          fTimeReceived.tv_sec, fTimeReceived.tv_usec, lossStats, lastPacketNumReceived, jitter, lastSRTime, diffSR_RRTime);
-  
-  fprintf(stderr, "=> round-trip delay: 0x%04x (== %f seconds)\n", rtd, rtd/65536.0);
-  LOGI("RTCP RR data (received at %lu.%06ld): lossStats 0x%08x, lastPacketNumReceived 0x%08x, jitter 0x%08x, lastSRTime 0x%08x, diffSR_RRTime 0x%08x\n",
-          fTimeReceived.tv_sec, fTimeReceived.tv_usec, lossStats, lastPacketNumReceived, jitter, lastSRTime, diffSR_RRTime);
-
-  LOGI("RTCP RR data print 1, fPacketLossRatio: %d, fTotNumPacketsLost: %d, fLastPacketNumReceived: %d", fPacketLossRatio, fTotNumPacketsLost, fLastPacketNumReceived);
-  LOGI("RTCP RR data print 2, fJitter: %d", fJitter);
-
-  LOGI("RTCP RR data print 2.1, => round-trip delay: 0x%04x (== %f seconds)\n", rtd, rtd/65536.0);
-#else
-    LOGI("not able to print loss!");
-#endif
+//#ifdef DEBUG_RR
+//  fprintf(stderr, "RTCP RR data (received at %lu.%06ld): lossStats 0x%08x, lastPacketNumReceived 0x%08x, jitter 0x%08x, lastSRTime 0x%08x, diffSR_RRTime 0x%08x\n",
+//          fTimeReceived.tv_sec, fTimeReceived.tv_usec, lossStats, lastPacketNumReceived, jitter, lastSRTime, diffSR_RRTime);
+//  
+//  fprintf(stderr, "=> round-trip delay: 0x%04x (== %f seconds)\n", rtd, rtd/65536.0);
+//  LOGI("RTCP RR data (received at %lu.%06ld): lossStats 0x%08x, lastPacketNumReceived 0x%08x, jitter 0x%08x, lastSRTime 0x%08x, diffSR_RRTime 0x%08x\n",
+//          fTimeReceived.tv_sec, fTimeReceived.tv_usec, lossStats, lastPacketNumReceived, jitter, lastSRTime, diffSR_RRTime);
+//
+//  LOGI("RTCP RR data print 1, fPacketLossRatio: %d, fTotNumPacketsLost: %d, fLastPacketNumReceived: %d", fPacketLossRatio, fTotNumPacketsLost, fLastPacketNumReceived);
+//  LOGI("RTCP RR data print 2, fJitter: %d", fJitter);
+//
+//  LOGI("RTCP RR data print 2.1, => round-trip delay: 0x%04x (== %f seconds)\n", rtd, rtd/65536.0);
+//#else
+//    LOGI("not able to print loss!");
+//#endif
 
 
   // Update our counts of the total number of octets and packets sent towards
