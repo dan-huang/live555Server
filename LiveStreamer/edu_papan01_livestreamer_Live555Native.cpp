@@ -43,32 +43,28 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_addList
 void sendClientNetworkInfo(jdouble packetLossPercent, jdouble delayInSeconds)
 {
     //Get current thread JNIEnv
+    
     JNIEnv * ENV;
-    if (jniVersion == 0) {
-        LOGI("LiveStreamer_Native 2, jni version = 0");
-        return;
-    }
+
     if (savedVM == NULL) {
         LOGI("LiveStreamer_Native 2, java vm is null");
         return;
     }
-    
+
     if (saved_listener_instance == NULL) {
         LOGI("LiveStreamer_Native 2, saved_listener_instance is null");
         return;
     }
-    
-    
-    
+
     int stat = savedVM->GetEnv((void **)&ENV, jniVersion);
-    
+
     if( ENV == NULL ) {
         LOGI("LiveStreamer_Native 2, java env is null");
         return;  //Cant attach to java, bail
     }
-    
+
     if (stat == JNI_EDETACHED) {  //We are on a different thread, attach
-        
+
         LOGI("LiveStreamer_Native 2, We are on a different thread, attach");
         if (savedVM->AttachCurrentThread(&ENV, NULL) != 0) {
             LOGI("LiveStreamer_Native 2, failed to attach current thread");
@@ -83,27 +79,34 @@ void sendClientNetworkInfo(jdouble packetLossPercent, jdouble delayInSeconds)
         LOGI("LiveStreamer_Native 2, jni version not supported");
         return;
     }
-    
+
 //    jclass randomClass = ENV->FindClass("com/segway/robot/module/stream/VideoNetworkManager");
     jclass randomClass = ENV->GetObjectClass(saved_listener_instance);
 
-    
-    
+
+
     if (randomClass==0) {
         LOGI("LiveStreamer_Native 2, com/segway/robot/module/stream/VideoNetworkManager not exist");
 
         return;
     }
-    
+
     jmethodID listenerEventOccured = ENV->GetMethodID(randomClass, "clientNetworkInfo", "(DD)V");
-    
+
     if (listenerEventOccured == 0 || listenerEventOccured == NULL) {
         LOGI("LiveStreamer_Native 2, method is null");
         return;
     }
-    
+
     ENV->CallVoidMethod(saved_listener_instance, listenerEventOccured, packetLossPercent, delayInSeconds);
 
+//    ENV->DeleteLocalRef(listenerEventOccured);
+    ENV->DeleteLocalRef(randomClass);
+
+    
+//    jobject obj = env->GetObjectArrayElement(array, i);
+    //your code here
+    
 //    if (ENV->ExceptionCheck()) {
 //        LOGI("LiveStreamer_Native 2, exception checked");
 //        ENV->ExceptionDescribe();
