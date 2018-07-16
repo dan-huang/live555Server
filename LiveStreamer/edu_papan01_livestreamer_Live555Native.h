@@ -38,6 +38,11 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_stopNat
  */
 JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedH264Data
   (JNIEnv *, jobject, jbyteArray);
+    
+ 
+JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedAACAudioData
+  (JNIEnv *, jobject, jbyteArray);
+    
 
 /*
  * Class:     edu_papan01_livestreamer_Live555Native

@@ -34,11 +34,12 @@ LiveStreamer::~LiveStreamer(){
 
 }
 
-void LiveStreamer::addSession(RTSPServer* rtspServer, const char* sessionName, ServerMediaSubsession *subSession)
+void LiveStreamer::addSession(RTSPServer* rtspServer, const char* sessionName, ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession)
 {
     UsageEnvironment& env(rtspServer->envir());
     ServerMediaSession* sms = ServerMediaSession::createNew(env, sessionName);
     sms->addSubsession(subSession);
+    sms->addSubsession(audio_subSession);
     rtspServer->addServerMediaSession(sms);
 
     char* url = rtspServer->rtspURL(sms);
@@ -64,28 +65,40 @@ bool LiveStreamer::init(CustomTaskFunc *onRRReceived){
         // 	_rtspServer->setUpTunnelingOverHTTP(rtspOverHTTPPort);
         // }
         _displaySource = H264_DisplayDeviceSource::createNew(*_env, queueSize, useThread, repeatConfig);
-        if(_displaySource == NULL)
-        {
-            LOGI("unable to create source for device");
-            return false;
-        }
-        else
+        
+        _audioSource = DisplayDeviceSource::createNew(*_env, queueSize, useThread);
+
+        
+        if(_displaySource != NULL && _audioSource != NULL)
         {
             OutPacketBuffer::maxSize = 600000;//DisplayDeviceSource::bufferedSize;
             StreamReplicator* replicator = StreamReplicator::createNew(*_env, _displaySource, false);
-            if (multicast)
-            {
-                if (maddr == INADDR_NONE) maddr = chooseRandomIPv4SSMAddress(*_env);
-                destinationAddress.s_addr = maddr;
-                LOGI("RTP  address :%s:%d", inet_ntoa(destinationAddress),rtpPortNum);
-                LOGI("RTCP address :%s:%d", inet_ntoa(destinationAddress),rtcpPortNum);
-                addSession(_rtspServer, murl.c_str(), MulticastServerMediaSubsession::createNew(*_env,destinationAddress,
-                                                                                                Port(rtpPortNum), Port(rtcpPortNum), ttl, replicator, onRRReceived));
-            } else {
-                addSession(_rtspServer, url.c_str(), UnicastServerMediaSubsession::createNew(*_env,replicator, onRRReceived));
-            }
 
+            StreamReplicator* audio_replicator = StreamReplicator::createNew(*_env, _audioSource, false);
+
+            UnicastServerMediaSubsession *session = UnicastServerMediaSubsession::createNew(*_env,replicator, onRRReceived, True);
             
+            UnicastServerMediaSubsession *audio_session = UnicastServerMediaSubsession::createNew(*_env,audio_replicator, NULL, False);
+            
+            addSession(_rtspServer, url.c_str(), session, audio_session);
+            
+            //            if (multicast)
+            //            {
+            //                if (maddr == INADDR_NONE) maddr = chooseRandomIPv4SSMAddress(*_env);
+            //                destinationAddress.s_addr = maddr;
+            //                LOGI("RTP  address :%s:%d", inet_ntoa(destinationAddress),rtpPortNum);
+            //                LOGI("RTCP address :%s:%d", inet_ntoa(destinationAddress),rtcpPortNum);
+            //                addSession(_rtspServer, murl.c_str(), MulticastServerMediaSubsession::createNew(*_env,destinationAddress,
+            //                                                                                                Port(rtpPortNum), Port(rtcpPortNum), ttl, replicator, onRRReceived));
+            //            } else {
+            //
+            //            }
+            
+        }
+        else
+        {
+            LOGI("unable to create source for device");
+            return false;
         }
     }
     return true;
@@ -98,6 +111,7 @@ void LiveStreamer::loop()
     _env->taskScheduler().doEventLoop(&quit);
     LOGI("END LOOP");
     Medium::close(_displaySource);
+    Medium::close(_audioSource);
     _env->reclaim();
     delete _scheduler;
 }
@@ -107,6 +121,12 @@ void LiveStreamer::dataPushed(char* data,unsigned int dataSize)
 {
 //    LOGI("push  raw data\t dataSize:%d",dataSize);
     _displaySource->pushRawData(data,dataSize);
+}
+
+void LiveStreamer::audioDataPushed(char* data,unsigned int dataSize)
+{
+    //    LOGI("push  raw data\t dataSize:%d",dataSize);
+    _audioSource->pushRawData(data,dataSize);
 }
 
 void LiveStreamer::stop()

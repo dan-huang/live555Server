@@ -30,6 +30,7 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_addList
     
     //Remember to free it after you're done using it otherwise garbage collector won't collect it and you'll get memory leaks:
 //    if (saved_listener_instance != NULL) {
+//        LOGI("LiveStreamer_Native 2, DeleteGlobalRef listener_instance");
 //        env->DeleteGlobalRef(saved_listener_instance);
 //    }
     
@@ -200,6 +201,17 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedH26
     char* buf = new char[len];
     env->GetByteArrayRegion (dataArray, 0, len, reinterpret_cast<jbyte*>(buf));
     streamer->dataPushed(buf,len);
+}
+
+JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedAACAudioData
+(JNIEnv *env, jobject jthiz, jbyteArray dataArray)
+{
+    LiveStreamer* streamer = getInstance(env,jthiz);
+    if(streamer == NULL) return;
+    int len = env->GetArrayLength(dataArray);
+    char* buf = new char[len];
+    env->GetByteArrayRegion (dataArray, 0, len, reinterpret_cast<jbyte*>(buf));
+    streamer->audioDataPushed(buf,len);
 }
 
 JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_destroy

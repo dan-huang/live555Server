@@ -19,8 +19,8 @@ public:
     BaseServerMediaSubsession(StreamReplicator* replicator): m_replicator(replicator) {};
 
 public:
-    static FramedSource* createSource(UsageEnvironment& env, FramedSource * videoES);
-    static RTPSink* createSink(UsageEnvironment& env, Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic);
+    static FramedSource* createSource(UsageEnvironment& env, FramedSource * videoES, Boolean isVideo);
+    static RTPSink* createSink(UsageEnvironment& env, Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, Boolean isVideo);
     char const* getAuxLine(DisplayDeviceSource* source,unsigned char rtpPayloadType);
 
 protected:
@@ -60,11 +60,11 @@ protected:
 class UnicastServerMediaSubsession : public OnDemandServerMediaSubsession , public BaseServerMediaSubsession
 {
 public:
-    static UnicastServerMediaSubsession* createNew(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask);
+    static UnicastServerMediaSubsession* createNew(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask, Boolean isVideo);
 
 protected:
-    UnicastServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask)
-            : OnDemandServerMediaSubsession(env, False), BaseServerMediaSubsession(replicator), fTaskFuncOnRRReceived(handlerTask) {};
+    UnicastServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask, Boolean isVideo)
+            : OnDemandServerMediaSubsession(env, False), BaseServerMediaSubsession(replicator), fTaskFuncOnRRReceived(handlerTask), fIsVideo(isVideo) {};
 
     virtual FramedSource* createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate);
     virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);
@@ -73,6 +73,7 @@ protected:
                                      unsigned char const* cname, RTPSink* sink);
     static void onRRReceived(void* clientData);
 protected:
+    Boolean fIsVideo;
     TaskFunc* fTaskFuncOnRRReceived;
 };
 #endif //LIVESTREAMER_SERVERMEDIASUBSESSION_H

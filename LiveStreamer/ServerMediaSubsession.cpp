@@ -10,16 +10,27 @@
 // ---------------------------------
 //   BaseServerMediaSubsession
 // ---------------------------------
-FramedSource* BaseServerMediaSubsession::createSource(UsageEnvironment& env, FramedSource * videoES)
+FramedSource* BaseServerMediaSubsession::createSource(UsageEnvironment& env, FramedSource * videoES, Boolean isVideo)
 {
-    FramedSource*  source = H264VideoStreamDiscreteFramer::createNew(env, videoES);
-    return source;
+    if (isVideo) {
+        FramedSource*  source = H264VideoStreamDiscreteFramer::createNew(env, videoES);
+        return source;
+    } else {
+        return videoES;
+    }
 }
 
-RTPSink*  BaseServerMediaSubsession::createSink(UsageEnvironment& env, Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic)
+RTPSink*  BaseServerMediaSubsession::createSink(UsageEnvironment& env, Groupsock * rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, Boolean isVideo)
 {
-    RTPSink* videoSink = H264VideoRTPSink::createNew(env, rtpGroupsock,rtpPayloadTypeIfDynamic);
-    return videoSink;
+    if (isVideo) {
+        RTPSink* videoSink = H264VideoRTPSink::createNew(env, rtpGroupsock,rtpPayloadTypeIfDynamic);
+        return videoSink;
+    } else {
+        RTPSink* audioSink = MPEG4GenericRTPSink::createNew(env, rtpGroupsock, rtpPayloadTypeIfDynamic,
+                                       8000, "audio", "AAC-hbr", "aac_audio_sink", 1);
+        // return audio
+        return audioSink;
+    }
 }
 
 char const* BaseServerMediaSubsession::getAuxLine(DisplayDeviceSource* source,unsigned char rtpPayloadType)
@@ -37,6 +48,53 @@ char const* BaseServerMediaSubsession::getAuxLine(DisplayDeviceSource* source,un
 }
 
 // -----------------------------------------
+//    ServerMediaSubsession for Unicast
+// -----------------------------------------
+UnicastServerMediaSubsession* UnicastServerMediaSubsession::createNew(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask, Boolean isVideo)
+{
+    return new UnicastServerMediaSubsession(env,replicator, handlerTask, isVideo);
+}
+
+FramedSource* UnicastServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate)
+{
+//    estBitrate = 50000; // kbps, estimate
+    FramedSource* source = m_replicator->createStreamReplica();
+    return createSource(envir(), source, fIsVideo);
+}
+
+RTPSink* UnicastServerMediaSubsession::createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource)
+{
+    return createSink(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, fIsVideo);
+}
+
+RTCPInstance* UnicastServerMediaSubsession
+::createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
+             unsigned char const* cname, RTPSink* sink) {
+    // Default implementation; may be redefined by subclasses:
+    
+    RTCPInstance* rtcpInstance = RTCPInstance::createNew(envir(), RTCPgs, totSessionBW, cname, sink, NULL/*we're a server*/);
+    if (fTaskFuncOnRRReceived != NULL) {
+        rtcpInstance->setRRHandler(fTaskFuncOnRRReceived, sink);
+    }
+    return rtcpInstance;
+}
+
+char const* UnicastServerMediaSubsession::getAuxSDPLine(RTPSink* rtpSink,FramedSource* inputSource)
+{
+    return this->getAuxLine((DisplayDeviceSource*)(m_replicator->inputSource()), rtpSink->rtpPayloadType());
+}
+
+
+
+
+
+
+
+
+
+
+
+// -----------------------------------------
 //    ServerMediaSubsession for Multicast
 // -----------------------------------------
 MulticastServerMediaSubsession* MulticastServerMediaSubsession::createNew(UsageEnvironment& env
@@ -48,14 +106,14 @@ MulticastServerMediaSubsession* MulticastServerMediaSubsession::createNew(UsageE
 {
     // Create a source
     FramedSource* source = replicator->createStreamReplica();
-    FramedSource* videoSource = createSource(env, source);
+    FramedSource* videoSource = createSource(env, source, True);
 
     // Create RTP/RTCP groupsock
     Groupsock* rtpGroupsock = new Groupsock(env, destinationAddress, rtpPortNum, ttl);
     Groupsock* rtcpGroupsock = new Groupsock(env, destinationAddress, rtcpPortNum, ttl);
 
     // Create a RTP sink  
-    RTPSink* videoSink = createSink(env, rtpGroupsock, 96);
+    RTPSink* videoSink = createSink(env, rtpGroupsock, 96, True);
 
     // Create 'RTCP instance'
     const unsigned maxCNAMElen = 100;
@@ -91,37 +149,3 @@ char const* MulticastServerMediaSubsession::getAuxSDPLine(RTPSink* rtpSink,Frame
 
 
 
-// -----------------------------------------
-//    ServerMediaSubsession for Unicast
-// -----------------------------------------
-UnicastServerMediaSubsession* UnicastServerMediaSubsession::createNew(UsageEnvironment& env, StreamReplicator* replicator,TaskFunc* handlerTask)
-{
-    return new UnicastServerMediaSubsession(env,replicator, handlerTask);
-}
-
-FramedSource* UnicastServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate)
-{
-    estBitrate = 5000; // kbps, estimate
-    FramedSource* source = m_replicator->createStreamReplica();
-    return createSource(envir(), source);
-}
-
-RTPSink* UnicastServerMediaSubsession::createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource)
-{
-    return createSink(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
-}
-
-RTCPInstance* UnicastServerMediaSubsession
-::createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
-             unsigned char const* cname, RTPSink* sink) {
-    // Default implementation; may be redefined by subclasses:
-    
-    RTCPInstance* rtcpInstance = RTCPInstance::createNew(envir(), RTCPgs, totSessionBW, cname, sink, NULL/*we're a server*/);
-    rtcpInstance->setRRHandler(fTaskFuncOnRRReceived, sink);
-    return rtcpInstance;
-}
-
-char const* UnicastServerMediaSubsession::getAuxSDPLine(RTPSink* rtpSink,FramedSource* inputSource)
-{
-    return this->getAuxLine((DisplayDeviceSource*)(m_replicator->inputSource()), rtpSink->rtpPayloadType());
-}

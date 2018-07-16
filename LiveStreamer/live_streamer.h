@@ -25,6 +25,10 @@ public:
      bool init(CustomTaskFunc *onRRReceived);
 
      void dataPushed(char* data,unsigned int dataSize);
+    
+    void audioDataPushed(char* data,unsigned int dataSize);
+
+    
 
      void loop();
 
@@ -37,9 +41,12 @@ protected:
 
     void addSession(RTSPServer* rtspServer,
                     const char* sessionName,
-                    ServerMediaSubsession *subSession);
+                    ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession);
 
 private:
+    
+    DisplayDeviceSource*        _audioSource;
+    
     DisplayDeviceSource*		_displaySource;
     UsageEnvironment*			_env;
     TaskScheduler* 				_scheduler;
