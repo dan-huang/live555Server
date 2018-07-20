@@ -213,7 +213,9 @@ LOCAL_SRC_FILES += BasicUsageEnvironment/BasicHashTable.cpp \
 				   LiveStreamer/H264_DisplayDeviceSource.cpp \
 				   LiveStreamer/ServerMediaSubsession.cpp \
 				   LiveStreamer/live_streamer.cpp \
+                   LiveStreamer/LMRTSPClient.cpp \
 				   LiveStreamer/edu_papan01_livestreamer_Live555Native.cpp
+
 
 #LOCAL_SHORT_COMMANDS := true
 

@@ -54,6 +54,16 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_destroy
     
 JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_addListener
   (JNIEnv *, jobject, jobject);
+    
+    
+JNIEXPORT void JNICALL Java_com_segway_robot_mobile_network_stream_Live555Client_addBufferListener
+    (JNIEnv *, jobject, jobject);
+    
+JNIEXPORT void JNICALL Java_com_segway_robot_mobile_network_stream_Live555Client_playRTSP
+    (JNIEnv *, jobject, jstring);
+    
+JNIEXPORT void JNICALL Java_com_segway_robot_mobile_network_stream_Live555Client_stopRTSP
+    (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }
