@@ -81,7 +81,7 @@ A.7 Computing the RTCP Transmission Interval
         * from becoming ridiculously small during transient outages like
         * a network partition.
         */
-       double const RTCP_MIN_TIME = 5.;
+       double const RTCP_MIN_TIME = 2.;
        /*
         * Fraction of the RTCP bandwidth to be shared among active
         * senders.  (This fraction was chosen so that in a typical

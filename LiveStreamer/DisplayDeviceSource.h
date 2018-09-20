@@ -100,7 +100,7 @@ protected:
     unsigned int m_queueSize;
     pthread_t m_thid;
     pthread_mutex_t m_mutex;
-    pthread_mutex_t m_mutex_raw;
+//    pthread_mutex_t m_mutex_raw;
     std::string m_auxLine;
 };
 
