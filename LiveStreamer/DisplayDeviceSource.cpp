@@ -21,7 +21,6 @@ int  DisplayDeviceSource::Stats::notify(int tv_sec, int framesize)
     return m_fps;
 }
 
-
 DisplayDeviceSource* DisplayDeviceSource::createNew(UsageEnvironment& env, unsigned int queueSize, bool useThread)
 {
     DisplayDeviceSource* source = new DisplayDeviceSource(env, queueSize, useThread);

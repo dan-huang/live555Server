@@ -299,6 +299,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
         StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
         
         if (resultCode != 0) {
+            LOGI("Failed to set up the subsession: %s", resultString);
             env << *rtspClient << "Failed to set up the \"" << *scs.subsession << "\" subsession: " << resultString << "\n";
             break;
         }
@@ -318,6 +319,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
         scs.subsession->sink = DummySink::createNew(env, *scs.subsession, rtspClient->url(), ((ourRTSPClient*)rtspClient)->fFunc);
         // perhaps use your own custom "MediaSink" subclass instead
         if (scs.subsession->sink == NULL) {
+            LOGI("Failed to create a data sink for the subsession: %s", env.getResultMsg());
             env << *rtspClient << "Failed to create a data sink for the \"" << *scs.subsession
             << "\" subsession: " << env.getResultMsg() << "\n";
             break;
@@ -351,6 +353,7 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
         StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
         
         if (resultCode != 0) {
+            LOGI("Failed to start playing session: %s", resultString);
             env << *rtspClient << "Failed to start playing session: " << resultString << "\n";
             break;
         }
