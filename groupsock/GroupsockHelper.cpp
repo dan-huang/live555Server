@@ -120,8 +120,8 @@ int setupDatagramSocket(UsageEnvironment& env, Port port) {
   if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT,
 		 (const char*)&reuseFlag, sizeof reuseFlag) < 0) {
     socketErr(env, "setsockopt(SO_REUSEPORT) error: ");
-    closeSocket(newSocket);
-    return -1;
+//    closeSocket(newSocket);
+//    return -1;
   }
 #endif
 
