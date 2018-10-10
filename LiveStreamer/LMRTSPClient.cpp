@@ -230,13 +230,17 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
         char* const sdpDescription = resultString;
         env << *rtspClient << "Got a SDP description:\n" << sdpDescription << "\n";
         
+        LOGI("Got a SDP description:  %s", sdpDescription);
+        
         // Create a media session object from this SDP description:
         scs.session = MediaSession::createNew(env, sdpDescription);
         delete[] sdpDescription; // because we don't need it anymore
         if (scs.session == NULL) {
+            LOGI("Failed to create a MediaSession object from the SDP description:  %s", env.getResultMsg());
             env << *rtspClient << "Failed to create a MediaSession object from the SDP description: " << env.getResultMsg() << "\n";
             break;
         } else if (!scs.session->hasSubsessions()) {
+            LOGI("This session has no media subsessions");
             env << *rtspClient << "This session has no media subsessions (i.e., no \"m=\" lines)\n";
             break;
         }
@@ -263,9 +267,11 @@ void setupNextSubsession(RTSPClient* rtspClient) {
     scs.subsession = scs.iter->next();
     if (scs.subsession != NULL) {
         if (!scs.subsession->initiate()) {
+            LOGI("Failed to initiate the subsession: %s", env.getResultMsg());
             env << *rtspClient << "Failed to initiate the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
             setupNextSubsession(rtspClient); // give up on this subsession; go to the next one
         } else {
+            LOGI("Initiated:  subsession");
             env << *rtspClient << "Initiated the \"" << *scs.subsession << "\" subsession (";
             if (scs.subsession->rtcpIsMuxed()) {
                 env << "client port " << scs.subsession->clientPortNum();
@@ -353,8 +359,10 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
         StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
         
         if (resultCode != 0) {
-            LOGI("Failed to start playing session: %s", resultString);
+            LOGI("Failed to start playing session: %s, code: %d", resultString, resultCode);
             env << *rtspClient << "Failed to start playing session: " << resultString << "\n";
+            
+            fflush(stdout);
             break;
         }
         

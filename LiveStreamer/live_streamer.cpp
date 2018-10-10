@@ -21,7 +21,6 @@ LiveStreamer::LiveStreamer(unsigned int fps, unsigned int port) {
     useMmap = true;
     useThread = true;
     maddr = INADDR_NONE;
-//    maddr = "192.168.10.225";
     repeatConfig = true;
     timeout = 65;
     _authDB = NULL;
