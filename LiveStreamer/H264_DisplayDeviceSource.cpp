@@ -16,7 +16,7 @@ H264_DisplayDeviceSource* H264_DisplayDeviceSource::createNew(UsageEnvironment& 
 
 // Constructor
 H264_DisplayDeviceSource::H264_DisplayDeviceSource(UsageEnvironment& env, unsigned int queueSize, bool useThread, bool repeatConfig)
-        : DisplayDeviceSource(env, queueSize,useThread), m_repeatConfig(repeatConfig)
+: DisplayDeviceSource(env, queueSize,useThread), m_repeatConfig(repeatConfig)
 {
 }
 
@@ -29,7 +29,7 @@ H264_DisplayDeviceSource::~H264_DisplayDeviceSource()
 std::list< std::pair<unsigned char*,size_t> > H264_DisplayDeviceSource::splitFrames(unsigned char* frame, unsigned frameSize)
 {
     std::list< std::pair<unsigned char*,size_t> > frameList;
-
+    
     size_t bufSize = frameSize;
     size_t size = 0;
     unsigned char* buffer = this->extractFrame(frame, bufSize, size);
@@ -48,26 +48,26 @@ std::list< std::pair<unsigned char*,size_t> > H264_DisplayDeviceSource::splitFra
                 break;
             default: break;
         }
-
+        
         if (m_auxLine.empty() && !m_sps.empty() && !m_pps.empty())
         {
             u_int32_t profile_level_id = 0;
             if (m_sps.size() >= 4) profile_level_id = (m_sps[1]<<16)|(m_sps[2]<<8)|m_sps[3];
-
+            
             char* sps_base64 = base64Encode(m_sps.c_str(), m_sps.size());
             char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());
-
+            
             std::ostringstream os;
             os << "profile-level-id=" << std::hex << std::setw(6) << profile_level_id;
             os << ";sprop-parameter-sets=" << sps_base64 <<"," << pps_base64;
             m_auxLine.assign(os.str());
-
+            
             free(sps_base64);
             free(pps_base64);
             LOGI("%s",m_auxLine.c_str());
         }
         frameList.push_back(std::make_pair(buffer, size));
-
+        
         buffer = this->extractFrame(&buffer[size], bufSize, size);
     }
     return frameList;

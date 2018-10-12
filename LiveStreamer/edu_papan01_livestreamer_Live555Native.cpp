@@ -77,16 +77,16 @@ void sendClientNetworkInfo(jdouble packetLossPercent, jdouble delayInSeconds)
 
     if (stat == JNI_EDETACHED) {  //We are on a different thread, attach
 
-        LOGI("LiveStreamer_Native 2, We are on a different thread, attach");
+//        LOGI("LiveStreamer_Native 2, We are on a different thread, attach");
         if (savedVM->AttachCurrentThread(&ENV, NULL) != 0) {
             LOGI("LiveStreamer_Native 2, failed to attach current thread");
             return;
         } else {
-            LOGI("LiveStreamer_Native 2, We are on a different thread, attach, success");
+//            LOGI("LiveStreamer_Native 2, We are on a different thread, attach, success");
         }
     } else if (stat == JNI_OK) {
         //
-        LOGI("LiveStreamer_Native 2, env ok!");
+//        LOGI("LiveStreamer_Native 2, env ok!");
     } else if (stat == JNI_EVERSION) {
         LOGI("LiveStreamer_Native 2, jni version not supported");
         return;
@@ -174,7 +174,7 @@ void onRRReceived(void* clientData) {
     
     //TODO: check db numReceivers count?
     
-    LOGI("LiveStreamer_Native 2, onRRReceived numReceivers: %d", db.numReceivers());
+//    LOGI("LiveStreamer_Native 2, onRRReceived numReceivers: %d", db.numReceivers());
     
     if (stats == NULL) {
         LOGI("LiveStreamer_Native 2, stats is NULL");
@@ -286,7 +286,6 @@ void sendBuffer(u_int8_t* buffer, unsigned size)
     
     if (stat == JNI_EDETACHED) {  //We are on a different thread, attach
         
-        LOGI("LiveStreamer_Native 3, We are on a different thread, attach");
         if (savedVM1->AttachCurrentThread(&ENV, NULL) != 0) {
             LOGI("LiveStreamer_Native 3, failed to attach current thread");
             return;

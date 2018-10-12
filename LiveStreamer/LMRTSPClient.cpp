@@ -158,12 +158,7 @@ void playRTSP(char const* rtspURL, BufferOutputFunc *func) {
     
     openURL(*env, "openRTSP", rtspURL, func);
     
-    LOGI("LiveStreamer_Native 4, open url end");
-    
-    
     env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
-    
-    
     
     env->reclaim(); env = NULL;
     delete scheduler; scheduler = NULL;
@@ -180,7 +175,6 @@ static unsigned rtspClientCount = 0; // Counts how many streams (i.e., "RTSPClie
 void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL, BufferOutputFunc *func) {
     RTSPClient* rtspClient = ourRTSPClient::createNew(env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, progName, 0, func);
     
-    LOGI("LiveStreamer_Native 4, pre create a RTSP client for ");
     
     
     if (rtspClient == NULL) {

@@ -326,7 +326,6 @@ void RTPTransmissionStats
     ++fTotalPacketCount_hi;
   }
 
-  LOGI("RTCP RR data print 3, newOctetCount: %d, newPacketCount: %d", newOctetCount, newPacketCount);
 }
 
 unsigned RTPTransmissionStats::roundTripDelay() const {
