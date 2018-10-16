@@ -41,18 +41,26 @@ m_queueSize(queueSize)
     memset(&m_mutex_raw,0,sizeof(m_mutex_raw));
     
     // start thread
-    pthread_mutex_init(&m_mutex, NULL);
-    pthread_mutex_init(&m_mutex_raw,NULL);
-    pthread_create(&m_thid, NULL, threadStub, this);
+    int r1 = pthread_mutex_init(&m_mutex, NULL);
+    int r2 = pthread_mutex_init(&m_mutex_raw,NULL);
+    int r3 = pthread_create(&m_thid, NULL, threadStub, this);
+    
+    if (r1 != 0 || r2 != 0 || r3 != 0) {
+        LOGI("DisplayDeviceSource:: init error, r1: %d, r2: %d, r3: %d", r1, r2, r3);
+    }
 }
 
 // Destructor
 DisplayDeviceSource::~DisplayDeviceSource()
 {
+    LOGI("DisplayDeviceSource:: deinit");
     envir().taskScheduler().deleteEventTrigger(m_eventTriggerId);
-    pthread_join(m_thid, NULL);
-    pthread_mutex_destroy(&m_mutex);
-    pthread_mutex_destroy(&m_mutex_raw);
+    int r1 = pthread_join(m_thid, NULL);
+    int r2 = pthread_mutex_destroy(&m_mutex);
+    int r3 = pthread_mutex_destroy(&m_mutex_raw);
+    if (r1 != 0 || r2 != 0 || r3 != 0) {
+        LOGI("DisplayDeviceSource:: deinit error, r1: %d, r2: %d, r3: %d", r1, r2, r3);
+    }
 }
 
 // thread mainloop
@@ -148,7 +156,6 @@ void DisplayDeviceSource::incomingPacketHandler()
 
 void DisplayDeviceSource::pushRawData(char* d,unsigned int dataSize)
 {
-    
     //LOGI("DisplayDeviceSource::pushRawData");
     pthread_mutex_lock(&m_mutex_raw);
     
