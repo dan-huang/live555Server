@@ -115,13 +115,13 @@ void LiveStreamer::loop()
 {
     quit = 0;
     LOGI("START LOOP");
-    _displaySource->startThread();
-    _audioSource->startThread();
+//    _displaySource->startThread();
+//    _audioSource->startThread();
     _env->taskScheduler().doEventLoop(&quit);
     LOGI("END LOOP");
 
-    _displaySource->stopThread();
-    _audioSource->stopThread();
+//    _displaySource->stopThread();
+//    _audioSource->stopThread();
 }
 
 

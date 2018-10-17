@@ -35,12 +35,13 @@ m_in("in"),
 m_out("out") ,
 m_queueSize(queueSize)
 {
-    
+    startThread();
 }
 
 // Destructor
 DisplayDeviceSource::~DisplayDeviceSource()
 {
+    stopThread();
 }
 
 void DisplayDeviceSource::startThread()
