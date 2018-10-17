@@ -30,7 +30,14 @@ LiveStreamer::LiveStreamer(unsigned int fps, unsigned int port) {
 #define DEBUG_RR 1
 
 LiveStreamer::~LiveStreamer(){
-
+    Medium::close(_displaySource);
+    Medium::close(_audioSource);
+    Medium::close(_rtspServer);
+    
+    _env->reclaim();
+    delete _scheduler;
+    
+    LOGI("deinit live streamer");
 }
 
 void LiveStreamer::addSession(RTSPServer* rtspServer, const char* sessionName, ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession)
@@ -106,13 +113,15 @@ bool LiveStreamer::init(CustomTaskFunc *onRRReceived){
 // This function will block current thread
 void LiveStreamer::loop()
 {
+    quit = 0;
     LOGI("START LOOP");
+    _displaySource->startThread();
+    _audioSource->startThread();
     _env->taskScheduler().doEventLoop(&quit);
     LOGI("END LOOP");
-    Medium::close(_displaySource);
-    Medium::close(_audioSource);
-    _env->reclaim();
-    delete _scheduler;
+
+    _displaySource->stopThread();
+    _audioSource->stopThread();
 }
 
 

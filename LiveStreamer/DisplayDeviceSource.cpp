@@ -35,6 +35,16 @@ m_in("in"),
 m_out("out") ,
 m_queueSize(queueSize)
 {
+    
+}
+
+// Destructor
+DisplayDeviceSource::~DisplayDeviceSource()
+{
+}
+
+void DisplayDeviceSource::startThread()
+{
     m_eventTriggerId = envir().taskScheduler().createEventTrigger(DisplayDeviceSource::deliverFrameStub);
     memset(&m_thid, 0, sizeof(m_thid));
     memset(&m_mutex, 0, sizeof(m_mutex));
@@ -50,8 +60,7 @@ m_queueSize(queueSize)
     }
 }
 
-// Destructor
-DisplayDeviceSource::~DisplayDeviceSource()
+void DisplayDeviceSource::stopThread()
 {
     LOGI("DisplayDeviceSource:: deinit");
     envir().taskScheduler().deleteEventTrigger(m_eventTriggerId);

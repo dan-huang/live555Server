@@ -65,6 +65,9 @@ public:
     static DisplayDeviceSource* createNew(UsageEnvironment& env,  unsigned int queueSize, bool useThread) ;
     std::string getAuxLine() { return m_auxLine; };
     void pushRawData(char* data,unsigned int dataSize);
+    
+    void startThread();
+    void stopThread();
 
     static int bufferedSize;
 
