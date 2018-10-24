@@ -177,7 +177,7 @@ void onRRReceived(void* clientData) {
 //    LOGI("LiveStreamer_Native 2, onRRReceived numReceivers: %d", db.numReceivers());
     
     if (stats == NULL) {
-        LOGI("LiveStreamer_Native 2, stats is NULL");
+//        LOGI("LiveStreamer_Native 2, stats is NULL");
         return;
     }
     sendClientNetworkInfo(stats->packetLossPercent(), stats->delayInSeconds());
@@ -196,7 +196,7 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_loopNat
         (JNIEnv *env, jobject jthiz)
 {
     LiveStreamer* streamer = getInstance(env,jthiz);
-    if(streamer != NULL) streamer->loop();
+    if(streamer != NULL) streamer->loop(onRRReceived);
 }
 
 
@@ -216,6 +216,8 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedH26
     char* buf = new char[len];
     env->GetByteArrayRegion (dataArray, 0, len, reinterpret_cast<jbyte*>(buf));
     streamer->dataPushed(buf,len);
+    
+//    delete[] buf;
 }
 
 JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedAACAudioData
@@ -227,7 +229,10 @@ JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_feedAAC
     char* buf = new char[len];
     env->GetByteArrayRegion (dataArray, 0, len, reinterpret_cast<jbyte*>(buf));
     streamer->audioDataPushed(buf,len);
+    
+//    delete[] buf;
 }
+
 
 JNIEXPORT void JNICALL Java_com_segway_robot_module_stream_Live555Native_destroy
         (JNIEnv *env, jobject jthiz)

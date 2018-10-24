@@ -35,13 +35,13 @@ m_in("in"),
 m_out("out") ,
 m_queueSize(queueSize)
 {
-    startThread();
+//    startThread();
 }
 
 // Destructor
 DisplayDeviceSource::~DisplayDeviceSource()
 {
-    stopThread();
+//    stopThread();
 }
 
 void DisplayDeviceSource::startThread()
@@ -167,7 +167,7 @@ void DisplayDeviceSource::incomingPacketHandler()
 void DisplayDeviceSource::pushRawData(char* d,unsigned int dataSize)
 {
     //LOGI("DisplayDeviceSource::pushRawData");
-    pthread_mutex_lock(&m_mutex_raw);
+    pthread_mutex_lock(&m_mutex_raw); //0x0
     
     RawData* data = (RawData*) malloc(sizeof(RawData));
     memset(data,0,sizeof(RawData));

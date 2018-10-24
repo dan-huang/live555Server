@@ -9,6 +9,13 @@
 #include <string>
 #include "log.h"
 
+#include "DisplayDeviceSource.h"
+
+#include <GroupsockHelper.hh>
+#include <BasicUsageEnvironment.hh>
+
+#include "H264_DisplayDeviceSource.h"
+#include "ServerMediaSubsession.h"
 
 class DisplayDeviceSource;
 class UsageEnvironment;
@@ -30,18 +37,18 @@ public:
 
     
 
-     void loop();
+     void loop(CustomTaskFunc *onRRReceived);
 
      void stop();
 
      LiveStreamer(unsigned int fps,unsigned int port);
 
      ~LiveStreamer();
-protected:
-
-    void addSession(RTSPServer* rtspServer,
-                    const char* sessionName,
-                    ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession);
+//protected:
+//
+//    void addSession(RTSPServer* rtspServer,
+//                    const char* sessionName,
+//                    ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession);
 
 private:
     
@@ -52,7 +59,11 @@ private:
     TaskScheduler* 				_scheduler;
     RTSPServer* 				_rtspServer;
     UserAuthenticationDatabase* _authDB;
-
+    
+    StreamReplicator* video_replicator;
+    StreamReplicator* audio_replicator;
+    ServerMediaSession* sms;
+    
 
     int queueSize ;
     int fps;

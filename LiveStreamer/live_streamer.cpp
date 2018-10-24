@@ -1,11 +1,5 @@
 #include "live_streamer.h"
-#include "DisplayDeviceSource.h"
 
-#include <GroupsockHelper.hh>
-#include <BasicUsageEnvironment.hh>
-
-#include "H264_DisplayDeviceSource.h"
-#include "ServerMediaSubsession.h"
 
 LiveStreamer::LiveStreamer(unsigned int fps, unsigned int port) {
     fps = 30;
@@ -30,98 +24,106 @@ LiveStreamer::LiveStreamer(unsigned int fps, unsigned int port) {
 #define DEBUG_RR 1
 
 LiveStreamer::~LiveStreamer(){
-    Medium::close(_displaySource);
-    Medium::close(_audioSource);
-    Medium::close(_rtspServer);
-    
-    _env->reclaim();
-    delete _scheduler;
+//    Medium::close(sms);
+//
+//    Medium::close(_rtspServer);
+//
+//    _env->reclaim();
+//    delete _scheduler;
     
     LOGI("deinit live streamer");
 }
 
-void LiveStreamer::addSession(RTSPServer* rtspServer, const char* sessionName, ServerMediaSubsession *subSession, ServerMediaSubsession *audio_subSession)
-{
-    UsageEnvironment& env(rtspServer->envir());
-    ServerMediaSession* sms = ServerMediaSession::createNew(env, sessionName);
-    sms->addSubsession(subSession);
-    sms->addSubsession(audio_subSession);
-    rtspServer->addServerMediaSession(sms);
-
-    char* url = rtspServer->rtspURL(sms);
-    LOGI("Play this stream using the URL : %s",url);
-    delete[] url;
-}
-
-
 bool LiveStreamer::init(CustomTaskFunc *onRRReceived){
-    _scheduler 		= BasicTaskScheduler::createNew();
-    _env 			= BasicUsageEnvironment::createNew(*_scheduler);
-    _rtspServer 	= RTSPServer::createNew(*_env, rtspPort, _authDB, timeout);
-
+    
+    _scheduler         = BasicTaskScheduler::createNew();
+    _env             = BasicUsageEnvironment::createNew(*_scheduler);
+    _rtspServer     = RTSPServer::createNew(*_env, rtspPort, _authDB, timeout);
+    
     if(_rtspServer == NULL)
     {
-        LOGI("create rtsp server failed");
+        
+        LOGI("init rtsp server failed: %s", _env->getResultMsg());
+        
         return false;
     }
-    else
+    
+    
+    UsageEnvironment& env(_rtspServer->envir());
+    sms = ServerMediaSession::createNew(env, url.c_str());
+    
+    _rtspServer->addServerMediaSession(sms);
+    
+    LOGI("init rtsp server success");
+    
+    _displaySource = H264_DisplayDeviceSource::createNew(*_env, queueSize, useThread, repeatConfig);
+    
+    _audioSource = DisplayDeviceSource::createNew(*_env, queueSize, useThread);
+    
+    
+    if(_displaySource == NULL || _audioSource == NULL)
     {
-        // if (rtspOverHTTPPort)
-        // {
-        // 	_rtspServer->setUpTunnelingOverHTTP(rtspOverHTTPPort);
-        // }
-        _displaySource = H264_DisplayDeviceSource::createNew(*_env, queueSize, useThread, repeatConfig);
-        
-        _audioSource = DisplayDeviceSource::createNew(*_env, queueSize, useThread);
-
-        
-        if(_displaySource != NULL && _audioSource != NULL)
-        {
-            OutPacketBuffer::maxSize = 600000;//DisplayDeviceSource::bufferedSize;
-            StreamReplicator* replicator = StreamReplicator::createNew(*_env, _displaySource, false);
-
-            StreamReplicator* audio_replicator = StreamReplicator::createNew(*_env, _audioSource, false);
-
-            UnicastServerMediaSubsession *session = UnicastServerMediaSubsession::createNew(*_env,replicator, onRRReceived, True);
-            
-            UnicastServerMediaSubsession *audio_session = UnicastServerMediaSubsession::createNew(*_env,audio_replicator, NULL, False);
-            
-            addSession(_rtspServer, url.c_str(), session, audio_session);
-            
-            //            if (multicast)
-            //            {
-            //                if (maddr == INADDR_NONE) maddr = chooseRandomIPv4SSMAddress(*_env);
-            //                destinationAddress.s_addr = maddr;
-            //                LOGI("RTP  address :%s:%d", inet_ntoa(destinationAddress),rtpPortNum);
-            //                LOGI("RTCP address :%s:%d", inet_ntoa(destinationAddress),rtcpPortNum);
-            //                addSession(_rtspServer, murl.c_str(), MulticastServerMediaSubsession::createNew(*_env,destinationAddress,
-            //                                                                                                Port(rtpPortNum), Port(rtcpPortNum), ttl, replicator, onRRReceived));
-            //            } else {
-            //
-            //            }
-            
-        }
-        else
-        {
-            LOGI("unable to create source for device");
-            return false;
-        }
+        LOGI("unable to create source for device");
+        return false;
     }
+    
+    OutPacketBuffer::maxSize = 600000;//DisplayDeviceSource::bufferedSize;
+    video_replicator = StreamReplicator::createNew(*_env, _displaySource, false);
+    
+    audio_replicator = StreamReplicator::createNew(*_env, _audioSource, false);
+    
+    UnicastServerMediaSubsession *session = UnicastServerMediaSubsession::createNew(*_env, video_replicator, onRRReceived, True);
+    
+    UnicastServerMediaSubsession *audio_session = UnicastServerMediaSubsession::createNew(*_env,audio_replicator, NULL, False);
+    
+    sms->addSubsession(session);
+    sms->addSubsession(audio_session);
+    
+    //            addSession(_rtspServer, url.c_str(), session, audio_session);
+    
+    LOGI("create rtsp server success");
+    
     return true;
 }
 
+
 // This function will block current thread
-void LiveStreamer::loop()
+void LiveStreamer::loop(CustomTaskFunc *onRRReceived)
 {
     quit = 0;
     LOGI("START LOOP");
-//    _displaySource->startThread();
-//    _audioSource->startThread();
+    _displaySource->startThread();
+    _audioSource->startThread();
+    
     _env->taskScheduler().doEventLoop(&quit);
     LOGI("END LOOP");
+    
+    
+//    Medium::close(_displaySource);
+//    Medium::close(_audioSource);
+//
+////    Medium::close(video_replicator);
+////    Medium::close(audio_replicator);
+//
+//
+//    Medium::close(session);
+//    Medium::close(audio_session);
+//
+//    sms->deleteAllSubsessions();
 
-//    _displaySource->stopThread();
-//    _audioSource->stopThread();
+//    Medium::close(sms);
+//    Medium::close(_rtspServer);
+//
+//    if (_env->reclaim()) {
+//        //            delete _env;
+//        LOGI("delete env success");
+//    } else {
+//        LOGI("delete env failed");
+//    }
+//    delete _scheduler;
+
+    _displaySource->stopThread();
+    _audioSource->stopThread();
 }
 
 

@@ -23,6 +23,7 @@ H264_DisplayDeviceSource::H264_DisplayDeviceSource(UsageEnvironment& env, unsign
 // Destructor
 H264_DisplayDeviceSource::~H264_DisplayDeviceSource()
 {
+    LOGI("deinit ~H264_DisplayDeviceSource");
 }
 
 // split packet in frames
